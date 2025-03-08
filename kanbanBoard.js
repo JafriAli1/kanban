@@ -1,16 +1,35 @@
-//user can create new Card
-//user can drag & drop cards to diffrent sections
+localStorage.setItem("taskCount", (localStorage.length||2)-2);
+let taskID = Number(localStorage.getItem('taskID')) || 0
+if (localStorage.getItem(taskID)==null) {
+    localStorage.setItem("taskID", taskID);
+}
+let taskCount = localStorage.getItem('taskCount')
 
+let boardCount = 0;
+if(localStorage.getItem('boardCount')==null){
+  localStorage.setItem('boardCount', boardCount)
+}
 const addTask = document.getElementById("addTask");
 const addBoard = document.getElementById("addBoard");
 const boards = document.querySelectorAll(".section");
 const items = document.querySelectorAll(".item");
+const items1 = [];
+function renderTask() {
+  for (let index = 1; index <= taskID; index++) {
+    if (localStorage.getItem(index) == null) {
+      continue;
+    } else {
+      const element = JSON.parse(localStorage.getItem(index));
+      items1.push(element);
+    }
+  }
+}
+renderTask()
 const input = document.querySelector(".input");
 const text = document.getElementById("text");
 const addBtn = document.getElementById("addBtn");
 const cancelBtn = document.getElementById("cancelBtn");
-let boardCount = 0;
-let taskCount = 0;
+
 function addAndRemoveClass(item) {
   item.addEventListener("dragstart", () => {
     item.classList.add("flying");
@@ -20,44 +39,46 @@ function addAndRemoveClass(item) {
   });
 }
 
+// change edit function so it can change both title and desc and after closing
 function editTask(item) {
-  const taskText = item.children[0];
+  console.log(item);
+  const taskTitle = item.children[0];
+  const taskDesc = item.children[1];
   const editBtn = document.createElement("button");
   editBtn.innerText = "Edit";
   editBtn.addEventListener("click", () => {
     item.setAttribute("draggable", "false");
-    const edit = document.createElement("input");
-    edit.value = taskText.innerText;
-    taskText.innerText = "";
-    taskText.appendChild(edit);
+    const edittitle = document.createElement("input");
+    edittitle.style.display = "block"
+    const editDesc = document.createElement("input");
+    editDesc.style.display = "block"
+    edittitle.value = taskTitle.innerText;
+    editDesc.value = taskDesc.innerText;
+    taskTitle.innerText = "";
+    taskDesc.innerText = "";
+    taskTitle.appendChild(edittitle);
+    taskTitle.appendChild(editDesc);
     const saveBtn = document.createElement("button");
     saveBtn.innerText = "Save";
-    item.replaceChild(saveBtn, item.children[1]);
+    item.children[3].replaceChild(saveBtn, item.children[3].children[0]);
     saveBtn.addEventListener("click", () => {
-      taskText.innerText = edit.value;
-      item.replaceChild(editBtn, item.children[1]);
+      taskTitle.innerText = edittitle.value;
+      taskDesc.innerText = editDesc.value;
+      item.children[3].replaceChild(editBtn, item.children[3].children[0]);
       item.setAttribute("draggable", "true");
+      localStorage.setItem(
+        item.id,
+        JSON.stringify({
+          id: item.id,
+          title: taskTitle.innerText,
+          description: taskDesc.innerText,
+          timestamp: "19:30 8/3/2025",
+          priority: "top",
+        })
+      );
     });
   });
-  item.appendChild(editBtn);
-}
-
-function addNewTask(text) {
-  const newTask = document.createElement("div");
-  const taskText = document.createElement("p");
-  const delBtn = document.createElement("button");
-  newTask.classList.add("item");
-  newTask.draggable = "true";
-  taskText.innerText = text;
-  addAndRemoveClass(newTask);
-  newTask.appendChild(taskText);
-  editTask(newTask);
-  delBtn.innerText = "Delete";
-  delBtn.addEventListener("click", () => {
-    newTask.remove();
-  });
-  newTask.appendChild(delBtn);
-  boards[0].children[1].appendChild(newTask);
+  item.children[3].appendChild(editBtn);
 }
 
 function addNewBoard(text) {
@@ -70,6 +91,8 @@ function addNewBoard(text) {
   newBoard.appendChild(title);
   newBoard.appendChild(items);
   newBoard.classList.add("section");
+  boardCount++;
+  newBoard.setAttribute("id", boardCount);
   delBtn.innerText = "Delete";
   delBtn.addEventListener("click", () => {
     newBoard.remove();
@@ -79,13 +102,14 @@ function addNewBoard(text) {
   newBoard.addEventListener("dragover", () => {
     const flying = document.querySelector(".flying");
     items.insertBefore(flying, items.children[0]);
+    board.tasks.push(flying.id)
   });
 }
 
 addBtn.addEventListener("click", () => {
   input.style.display = "none";
   if (addBtn.classList[0] == "taskBtn") {
-    addNewTask(text.value);
+    addNewTask(text.value, "asdasda", "top");
 
     addBtn.classList.remove("taskBtn");
   } else {
@@ -114,19 +138,47 @@ addTask.addEventListener("click", () => {
   addBtn.classList.add("taskBtn");
 });
 
-items.forEach((item) => {
+items1.forEach((item,index)=>{
+  const task = document.createElement("div");
+  const taskTitle = document.createElement("h4");
+  const taskDesc = document.createElement("p");
+  const timestamp = document.createElement("p");
+  const buttons = document.createElement("div");
+  buttons.classList.add('buttons')
   const delBtn = document.createElement("button");
+  task.classList.add("item");
+  task.id = item.id;
+  task.draggable = "true";
+  taskTitle.innerText = item.title;
+  taskDesc.innerText = item.description;
+  timestamp.innerText = item.timestamp;
+  addAndRemoveClass(task);
+  task.appendChild(taskTitle);
+  task.appendChild(taskDesc);
+  task.appendChild(timestamp);
+  task.appendChild(buttons)
+  editTask(task);
   delBtn.innerText = "Delete";
   delBtn.addEventListener("click", () => {
-    item.remove();
+    task.remove();
+    localStorage.removeItem(item.id);
+    taskCount--
+    localStorage.setItem("taskCount", taskCount)
+    items1.splice(index,1)
   });
-  editTask(item);
-  item.appendChild(delBtn);
-  item.draggable = "true";
-  addAndRemoveClass(item);
-});
+  buttons.appendChild(delBtn);
+  boards[0].children[1].appendChild(task);
+})
 
-boards.forEach((board) => {
+boards.forEach((board, index) => {
+  let boardX = {
+    id: index,
+    tasks: [],
+  };
+  boardCount=index+1
+  localStorage.setItem('boardCount', boardCount)
+  console.log(boardCount);
+  board.id = index+1
   const delBtn = document.createElement("button");
   delBtn.innerText = "Delete";
   delBtn.addEventListener("click", () => {
@@ -136,9 +188,9 @@ boards.forEach((board) => {
   board.addEventListener("dragover", () => {
     const flying = document.querySelector(".flying");
     board.children[1].insertBefore(flying, board.children[1].children[0]);
+    boardX.tasks.push(flying.id)
   });
 });
-
 
 // ----fetures----
 // edit task -done
@@ -147,19 +199,55 @@ boards.forEach((board) => {
 // remove board -done
 // drag sort -done
 // new input card =done
-// save to localstorage
-
-// tasks.forEach(task){ 
-//   JSON.stringify()
-//   localStorage.setItem({taskId:task})
-// }
-
-// let task = {
-//   title:"xyz",
-//   timestamp:"123",
-//   boardID:""
-// }
+// save to localstorage -task done
 
 // count all tasks
-//sum of childern.length of all boards
 // add time to all tasks
+
+function addNewTask(title, description, priority) {
+  taskID++;
+  taskCount++
+  localStorage.setItem("taskCount", taskCount);
+  localStorage.setItem("taskID", taskID);
+  let date = new Date();
+  let dateStr = date.toLocaleDateString();
+  let hour = date.getHours();
+  hour.toString().length == 1 ? (hour = `0${hour}`) : hour;
+  let min = date.getMinutes();
+  min.toString().length == 1 ? (min = `0${min}`) : min;
+  let task = {
+    id: taskID,
+    title: title,
+    description: description,
+    timestamp: `${hour}:${min} ${dateStr}`,
+    priority: priority,
+  };
+  const newTask = document.createElement("div");
+  const taskTitle = document.createElement("h4");
+  const taskDesc = document.createElement("p");
+  const timestamp = document.createElement("p");
+  const buttons = document.createElement("div")
+  const delBtn = document.createElement("button");
+  newTask.classList.add("item");
+  newTask.id = taskID;
+  newTask.draggable = "true";
+  taskTitle.innerText = title;
+  taskDesc.innerText = description;
+  timestamp.innerText = `${hour}:${min} ${dateStr}`;
+  addAndRemoveClass(newTask);
+  newTask.appendChild(taskTitle);
+  newTask.appendChild(taskDesc);
+  newTask.appendChild(timestamp);
+  newTask.appendChild(buttons)
+  editTask(newTask);
+  delBtn.innerText = "Delete";
+  delBtn.addEventListener("click", () => {
+    newTask.remove();
+    localStorage.removeItem(task.id);
+    taskCount--;
+    localStorage.setItem("taskCount", taskCount);
+  });
+  buttons.appendChild(delBtn);
+  boards[0].children[1].appendChild(newTask);
+  localStorage.setItem(task.id, JSON.stringify(task));
+}

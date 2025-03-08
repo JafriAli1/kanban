@@ -14,25 +14,19 @@
         <div class="section">
             <h3>Planned</h3>
             <div class="items">
-                <div class="item">
-                    <p>Learn React</p>
-                </div>
+                
             </div>
         </div>
         <div class="section">
             <h3>In Progress</h3>
             <div class="items">
-                <div class="item">
-                    <p>Learn JS</p>
-                </div>
+                
             </div>
         </div>
         <div class="section">
             <h3>Done</h3>
             <div class="items">
-                <div class="item">
-                    <p>Learn HTML</p>
-                </div>
+                
             </div>
         </div>
     </div>
@@ -40,7 +34,7 @@
         <button type="button" id="addTask">Add Task</button>
         <button type="button" id="addBoard">Add Board</button>
     </div>
-    <div class="input">
+    <div class="input" id="taskInput">
         <div class="card">
             <input type="text" placeholder="Enter Task Title" id="text">
             <div>
@@ -48,7 +42,15 @@
                 <input type="button" value="Cancel" id="cancelBtn">
             </div>
         </div>
-
+    </div>
+    <div class="input" id="boardInput">
+        <div class="card">
+            <input type="text" placeholder="Enter Task Title" id="text">
+            <div>
+                <input type="button" value="Add" id="addBtn">
+                <input type="button" value="Cancel" id="cancelBtn">
+            </div>
+        </div>
     </div>
     <script src="kanbanBoard.js"></script>
 </body>
